@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Embeddit | oEmbed &amp; Open Graph &lt;meta&gt; Fetcher</title>
+        
+        <meta property="og:title" content="Open Graph &lt;meta&gt; Fetcher" />
+        <meta property="og:description" content="A small service that retrieves Open Graph meta info from web pages and returns a representation of that info in json format." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="http://embeddit.appspot.com/" />
+        
+        <style type="text/css">
+            @import url({{ url_for('static', filename='css/reset.css') }});
+            @import url({{ url_for('static', filename='css/style.css') }});
+        </style>
+    </head>
+<body>
+    <div id="content">
+        <h1>Embeddit</h1>
+        <small>An oEmbed &amp; Open Graph &lt;meta&gt; fetcher</small>
+        <div id="about">
+            <h2>About</h2>
+            <ul>
+                <li>Ask for Open Graph meta info about a url:<br/>
+                    <pre>http://embeddit.appspot.com/fetch/?url=http%3A//ogp.me</pre><br/>
+                </li>
+                <li>Get back a json representation of that info:<br/>
+                    <pre>
+{
+    "url": "http:\/\/opengraphprotocol.org\/",
+    "image": "http:\/\/opengraphprotocol.org\/open_graph_protocol_logo.png",
+    "type": "website",
+    "description": "The Open Graph protocol enables any 
+    web page to become a rich object in a social graph.",
+    "title": "Open Graph Protocol"
+}
+                    </pre>
+                <li>
+            </ul>
+        </div>
+        <div id="try">
+            <h2>Demo</h2>
+            <input type="text" name="url" id="url" class="subdood" value="Type or paste url" /><br/>
+            <a id="try-url" href="javascript:void(0)" alt="http://ogp.me">Demo: "http://ogp.me"</a>
+            <div id="og"></div>
+        </div>
+        <div id="byline">
+            <span><a href="http://github.com/rnagle">Ryan Nagle &raquo;</a></span>
+        </div>
+    </div>
+
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='jquery.noisy.min.js') }}"></script>
+<script type="text/javascript">
+$(function(){
+    var last_data = null;
+    var last_url = null;
+    var last_key = null;
+    
+    $('#try-url').click(function(){
+        $('#url').val('');
+        
+        address = $(this).attr('alt');
+        $('#url').val(address);
+        
+        grab_the_meta(address);
+    });
+    
+    $('#url').focus(function() {
+        theval = $(this).val();
+        
+        if (theval == 'Type or paste url') {
+            $(this).val('');
+        }
+    });
+    
+    $("#url").bind('paste', function(e) {
+        var el = $(this);
+        setTimeout(function() {
+            address = $(el).val();
+            address = escape(address);
+            grab_the_meta(address);
+        }, 100);
+    });
+    
+    $('#url').bind('keypress_end', function() {
+        address = $('#url').val();
+        address = escape(address);
+        
+        grab_the_meta(address);
+    });
+    
+    $('#url').keyup(function(e) {
+        // Crappy way of detecting paste key strokes
+        // and preventing grab_the_meta() from firing
+        // twice
+        if (e.keyCode != 86 && 
+            e.keyCode != 91 && 
+            e.keyCode != 17 && 
+            last_key != null && 
+            last_key != 91 && 
+            last_key != 17) {
+            keypress_end_trigger();
+        }
+        last_key = e.keyCode;
+    });
+    
+    function grab_the_meta(address) {
+        if (address != '' && address != null && address != last_url) {
+            $('#og').html('<div id="loading"><img src="{{ url_for('static', filename='ajax-loader.gif') }}" /></div>');
+            $.ajax({
+                url: '/fetch/?url=' + address + '&callback=?',
+                dataType: 'jsonp',
+                type: 'get',
+                success: add_the_meta
+            });
+        }
+    }
+    
+    function add_the_meta(data) {
+        if (data != last_data) {
+            if (data['error']) {
+                $('#og').html('<div class="error"><h1>Bummer, dude.</h1> Either: <ul> <li>You gave me an invalid URL</li> <li>The address is unavailable</li></ul></div>');
+            } else if (data['source_type'] == 'open_graph' && data['title']) {
+                desc = data['description'];
+                image = data['image'];
+                title = data['title'];
+                type = data['type'];
+                url = data['url'];
+                
+                html_str = '<h2 id="title"><a href="' + url + '">' + title + '&nbsp;&raquo;</a></h2>';
+                html_str += (image != '' && image != null)? '<div id="image"><img width="160" src="' + image + '" /></div>': '';
+                html_str += (desc != '' && desc != null)? '<div id="desc">' + desc + '</div>': '';
+                
+                $('#og').html(html_str);
+            } else if (data['source_type'] == 'oembed' && data['title']) {
+                title = data['title'];
+                type = data['type'];
+                
+                if (type == 'video') {
+                    embed = data['html'];
+                    author = data['author_name'];
+                    author_url = data['author_url'];
+                    
+                    html_str = '<h2 id="title">' + title + '</h2>';
+                    html_str += '<div id="author-info">By: <a href="' + author_url + '">' + author + '</a></div>';
+                    html_str += (embed != '' && embed != null)? '<div id="embed">' + embed + '</div>': '';
+                } else if (type == 'photo') {
+                    thumb = data['url'];
+                    author = data['author_name'];
+                    author_url = data['author_url'];
+                    
+                    html_str = '<h2 id="title">' + title + '</h2>';
+                    html_str += '<div id="author-info">By: <a href="' + author_url + '">' + author + '</a></div>';
+                    html_str += (thumb != '' && thumb != null)? '<div id="image"><img src="' + thumb + '" /></div>': '';
+                }
+                
+                $('#og').html(html_str);
+            }
+            last_data = data;
+            last_url = address;
+        }
+    }
+    
+    function keypress_end_trigger() {
+        return $('#url').keyup(function(e) {
+          var code;
+          code = e.keyCode;
+          if (code !== 40 && code !== 38) {
+            if (window.kp) {
+              clearTimeout(window.kp);
+            }
+            window.kp = setTimeout(kp_end, 1000);
+          }
+        });
+    }
+    
+    function kp_end() {
+        $('#url').trigger('keypress_end');
+    }
+    
+    noisy_opts = {
+        'intensity' : 1, 
+        'size' : 200, 
+        'opacity' : 0.15, 
+        'fallback' : '', 
+        'monochrome' : false
+    };
+    $('body').noisy(noisy_opts).css('background-color', '#EDEBDE');
+});
+</script>
+</body>
+</html>
