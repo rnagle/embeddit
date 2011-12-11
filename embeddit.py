@@ -39,12 +39,12 @@ class Embeddit:
             try:
                 results = urlopen('%s?%s' % (oembed_url, params))
                 content = decoder.decode(results.read())
-                content['source_type'] = 'oembed'
+                content[u'source_type'] = 'oembed'
             except ValueError:
                 params = urlencode({'url': url, 'format': 'json'}) # fragile
                 results = urlopen('%s?%s' % (oembed_url, params))
                 content = decoder.decode(results.read())
-                content['source_type'] = 'oembed'
+                content[u'source_type'] = 'oembed'
             return content
         except IndexError:
             return empty_meta
@@ -70,7 +70,7 @@ class Embeddit:
             if content == {}:
                 return empty_meta
             else:
-                content['source_type'] = 'open_graph'
+                content[u'source_type'] = 'open_graph'
                 return content
         except URLError:
             return invalid_url
