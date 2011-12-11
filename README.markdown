@@ -1,29 +1,38 @@
 # Embeddit
 
-A (mostly working) oembed and open graph meta fetcher api.
+A simple oembed meta fetcher which falls back to open graph info when
+oembed is not available.
 
 See <http://embeddit.appspot.com/>
 
 ## Ask for oEmbed or Open Graph meta info about a url:
-    
-    http://embeddit.appspot.com/fetch/?url=http%3A//ogp.me
 
-## Get back a json representation of that info:
+    > oe = Embeddit()
+    > result = oe.fetch('http://ogp.me')
 
+## Get back a dictionary of that info:
+
+    > result
     {
-        "url": "http:\/\/opengraphprotocol.org\/",
-        "image": "http:\/\/opengraphprotocol.org\/open_graph_protocol_logo.png",
-        "type": "website",
-        "description": "The Open Graph protocol enables any 
-        web page to become a rich object in a social graph.",
-        "title": "Open Graph Protocol"
+        u'description': u'The Open Graph protocol enables any web page to become a rich object in a social graph. ',
+        u'image': u'http://ogp.me/logo.png',
+        'source_type': 'open_graph',
+        u'title': u'Open Graph Protocol',
+        u'type': u'website',
+        u'url': u'http://ogp.me/'
     }
 
-## Made to run on App Engine:
+## Also returns json:
 
-But, it uses Flask <http://flask.pocoo.org/>
-
-So it should be simple to refactor and deploy elsewhere.
+    > oe.fetch_json('http://ogp.me')
+    '{
+        "description": "The Open Graph protocol enables any web page to become a rich object in a social graph. ",
+        "title": "Open Graph Protocol",
+        "url": "http://ogp.me/",
+        "image": "http://ogp.me/logo.png",
+        "source_type": "open_graph",
+        "type": "website"
+    }'
 
 ## Included data/endpoints.json is from:
 
