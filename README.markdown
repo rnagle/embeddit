@@ -5,12 +5,11 @@ oembed is not available.
 
 ## Ask for oEmbed or Open Graph meta info about a url:
 
-    > oe = Embeddit()
-    > result = oe.fetch('http://vimeo.com/33211636')
+    > oe = Embeddit('http://vimeo.com/33211636')
 
 ## Get back a dictionary of that info:
 
-    > result
+    > oe
     {
         u'count': u'22906',
         u'description': u'During 3 years (2008-2011) i have been drawing 12 drawing of animation every day, it make one second of film. I had no plans what so ever before starting the first drawing. And then, each of the folowing days, I took the 3 last drawing from the day before...',
@@ -28,7 +27,7 @@ oembed is not available.
 
 ## Also returns json:
 
-    > oe.fetch_json('http://vimeo.com/33211636')
+    > oe.to_json()
     '{
         "count": "22906",
         "site_name": "Vimeo",
@@ -44,7 +43,8 @@ oembed is not available.
         "type": "article"
     }'
 
-## Included data/endpoints.json is from:
+## Included data/providers.json is from:
 
-<http://code.google.com/p/python-oembed/>
+http://oembed.com/providers.json
 
+Last updated: June 28, 2016
