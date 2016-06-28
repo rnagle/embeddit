@@ -1,3 +1,4 @@
+import os
 import re
 import json
 import requests
@@ -5,6 +6,8 @@ import fnmatch
 
 from urllib import urlencode
 from BeautifulSoup import BeautifulSoup
+
+_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 invalid_url = {'error': 'Invalid URL'}
 unreachable = {'error': 'Failed to reach the URL'}
@@ -44,7 +47,7 @@ class Embeddit(dict):
 
     def fetch_oembed_meta(self):
         try:
-            f = open('data/providers.json', 'r')
+            f = open(get_data('providers.json'), 'r')
             providers = json.loads(f.read())
             oembed_url = None
 
@@ -102,3 +105,7 @@ class Embeddit(dict):
             return invalid_url
         except requests.exceptions.HTTPError:
             return unreachable
+
+
+def get_data(path):
+    return os.path.join(_ROOT, 'data', path)
