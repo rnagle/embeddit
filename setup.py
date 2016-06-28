@@ -15,6 +15,6 @@ setup(
     author_email='rmnagle@gmail.com',
     license='MIT',
     url='https://github.com/rnagle/embeddit',
-    packages=['embeddit', 'embeddit.Embeddit'],
+    packages=['embeddit'],
     install_requires=install_requires
 )
