@@ -78,7 +78,7 @@ class Embeddit(dict):
             params = urlencode({'url': self.url})
 
             try:
-                results = requests.get('%s?%s' % (oembed_url, params))
+                results = requests.get('%s?%s' % (oembed_url.replace('{format}', 'json'), params))
                 content = json.loads(results.content)
                 content[u'source_type'] = 'oembed'
             except ValueError:
