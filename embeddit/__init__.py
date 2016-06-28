@@ -35,6 +35,7 @@ class Embeddit(dict):
             # Fall back to open graph
             response = self.fetch_og_meta()
 
+        self.clear()
         self.update(response)
         self.fetched = True
 
@@ -59,6 +60,16 @@ class Embeddit(dict):
                             schema = schema.replace('https://', 'https://*')
                         if fnmatch.fnmatch(self.url, schema):
                             oembed_url = endpoint.get('url')
+                            break
+
+                if not oembed_url:
+                    provider_urls = [
+                        provider.get('provider_url'),
+                        provider.get('provider_url').replace('http://', 'https://')
+                    ]
+                    for provider_url in provider_urls:
+                        if fnmatch.fnmatch(self.url,  provider_url + "*"):
+                            oembed_url = provider.get('endpoints')[0].get('url')
                             break
 
             if not oembed_url:
