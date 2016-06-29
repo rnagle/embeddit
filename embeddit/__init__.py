@@ -12,6 +12,7 @@ _ROOT = os.path.abspath(os.path.dirname(__file__))
 invalid_url = {'error': 'Invalid URL'}
 unreachable = {'error': 'Failed to reach the URL'}
 empty_meta = {'error': 'Found no meta info for that url'}
+headers = {'user-agent': 'embeddit/0.0.1'}
 
 
 class Embeddit(dict):
@@ -78,12 +79,15 @@ class Embeddit(dict):
             params = urlencode({'url': self.url})
 
             try:
-                results = requests.get('%s?%s' % (oembed_url.replace('{format}', 'json'), params))
+                results = requests.get(
+                    '%s?%s' % (oembed_url.replace('{format}', 'json'), params),
+                    headers=headers
+                )
                 content = json.loads(results.content)
                 content[u'source_type'] = 'oembed'
             except ValueError:
                 params = urlencode({'url': self.url, 'format': 'json'})
-                results = requests.get('%s?%s' % (oembed_url, params))
+                results = requests.get('%s?%s' % (oembed_url, params), headers=headers)
                 content = json.loads(results.content)
                 content[u'source_type'] = 'oembed'
             return content
@@ -96,7 +100,7 @@ class Embeddit(dict):
 
     def fetch_og_meta(self):
         try:
-            results = requests.get(self.url)
+            results = requests.get(self.url, headers=headers)
             soup = BeautifulSoup(results.content)
             meta = soup.findAll('meta')
 
